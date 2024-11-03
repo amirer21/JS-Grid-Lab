@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interact.js Grid Example</title>
+    <style>
+        /* 기본 스타일 */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #grid-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-width: 600px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .grid-item {
+            width: 100px;
+            height: 100px;
+            background-color: #2196f3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            position: relative;
+            resize: both;
+            overflow: auto;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            background: red;
+            color: white;
+            border: none;
+            font-size: 12px;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .controls {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="addGrid()">그리드 추가</button>
+        <button onclick="startAutoAddGrids()">자동 그리드 시작</button>
+        <button onclick="stopAutoAddGrids()">자동 그리드 중지</button>
+    </div>
+    <div id="grid-container">
+        <!-- 그리드 아이템이 동적으로 추가됩니다 -->
+    </div>
+
+    <!-- Interact.js 라이브러리 불러오기 (UMD 버전) -->
+    <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.11/dist/interact.min.js"></script>
+    <script>
+        let gridCount = 0;
+        let autoAddInterval;
+
+        function addGrid() {
+            // 새로운 그리드 아이템 생성
+            const gridItem = document.createElement('div');
+            gridItem.className = 'grid-item';
+            gridItem.textContent = `Grid ${++gridCount}`;
+            gridItem.setAttribute('data-id', gridCount);
+
+            // 제거 버튼 추가
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-btn';
+            removeBtn.textContent = 'X';
+            removeBtn.onclick = () => removeGrid(gridItem);
+            gridItem.appendChild(removeBtn);
+
+            // 그리드 컨테이너에 아이템 추가
+            document.getElementById('grid-container').appendChild(gridItem);
+
+            // Interact.js 드래그 및 드롭 설정 적용
+            interact(gridItem)
+                .draggable({
+                    listeners: {
+                        start(event) {
+                            event.target.classList.add('dragging');
+                        },
+                        move(event) {
+                            const target = event.target;
+                            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                            const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+                            target.style.transform = `translate(${x}px, ${y}px)`;
+                            target.setAttribute('data-x', x);
+                            target.setAttribute('data-y', y);
+                        },
+                        end(event) {
+                            event.target.classList.remove('dragging');
+                        }
+                    }
+                })
+                .resizable({
+                    edges: { left: true, right: true, bottom: true, top: true },
+                    listeners: {
+                        move(event) {
+                            const target = event.target;
+                            let { width, height } = event.rect;
+
+                            // 적용할 새 크기 설정
+                            target.style.width = `${width}px`;
+                            target.style.height = `${height}px`;
+                        }
+                    }
+                })
+                .dropzone({
+                    accept: '.grid-item',
+                    overlap: 0.5,
+                    ondropactivate(event) {
+                        event.target.classList.add('drop-active');
+                    },
+                    ondragenter(event) {
+                        event.target.classList.add('drop-target');
+                        event.relatedTarget.classList.add('can-drop');
+                    },
+                    ondragleave(event) {
+                        event.target.classList.remove('drop-target');
+                        event.relatedTarget.classList.remove('can-drop');
+                    },
+                    ondrop(event) {
+                        swapGridPositions(event.relatedTarget, event.target);
+                    },
+                    ondropdeactivate(event) {
+                        event.target.classList.remove('drop-active');
+                        event.target.classList.remove('drop-target');
+                    }
+                });
+        }
+
+        function swapGridPositions(item1, item2) {
+            const parent = item1.parentNode;
+            const temp = document.createElement('div');
+
+            // 임시 노드와 위치 변경
+            parent.insertBefore(temp, item1);
+            parent.insertBefore(item1, item2);
+            parent.insertBefore(item2, temp);
+            parent.removeChild(temp);
+        }
+
+        function removeGrid(gridItem) {
+            gridItem.remove();  // 그리드 아이템 제거
+        }
+
+        function startAutoAddGrids() {
+            // 1초마다 100개의 그리드 추가
+            autoAddInterval = setInterval(() => {
+                for (let i = 0; i < 100; i++) {
+                    addGrid();
+                }
+            }, 1000);
+        }
+
+        function stopAutoAddGrids() {
+            // 자동 추가 멈추기
+            clearInterval(autoAddInterval);
+        }
+    </script>
+</body>
+</html>

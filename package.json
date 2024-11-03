@@ -1,0 +1,24 @@
+{
+  "name": "JS-Grid-Lab",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amirer21/JS-Grid-Lab.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amirer21/JS-Grid-Lab/issues"
+  },
+  "homepage": "https://github.com/amirer21/JS-Grid-Lab#readme",
+  "dependencies": {
+    "gridstack": "^11.0.1",
+    "interactjs": "^1.10.27"
+  }
+}

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gridstack.js Example</title>
+    <link rel="stylesheet" href="../node_modules/gridstack/dist/gridstack.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #grid-container {
+            width: 600px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .controls {
+            margin-bottom: 10px;
+        }
+        .grid-stack-item {
+            margin-bottom: 10px; /* 위아래 간격 추가 */
+        }
+        .grid-item-content {
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="addGridItem()">그리드 추가</button>
+    </div>
+    <div id="grid-container" class="grid-stack"></div>
+
+    <!-- Gridstack.js 라이브러리 -->
+    <script src="../node_modules/gridstack/dist/gridstack-all.js"></script>
+    <script>
+        // Gridstack 초기화 (간격 설정 포함)
+        const grid = GridStack.init({
+            margin: '5px' // 그리드 아이템 간의 기본 간격 설정 (상하좌우)
+        });
+
+        // 랜덤 색상 생성 함수
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // 그리드 아이템 추가 함수
+        function addGridItem() {
+            const gridItem = document.createElement('div');
+            gridItem.className = 'grid-stack-item';
+            
+            // 그리드 아이템 콘텐츠 생성
+            const gridItemContent = document.createElement('div');
+            gridItemContent.className = 'grid-stack-item-content grid-item-content';
+            gridItemContent.style.backgroundColor = getRandomColor(); // 랜덤 배경 색상 적용
+            gridItemContent.textContent = `Grid ${grid.engine.nodes.length + 1}`;
+            
+            gridItem.appendChild(gridItemContent);
+
+            // GridStack에 makeWidget으로 아이템 추가
+            document.getElementById('grid-container').appendChild(gridItem);
+            grid.makeWidget(gridItem);  // makeWidget으로 gridItem을 위젯으로 변환하여 추가
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interact.js Grid Example</title>
+    <style>
+        /* 기본 스타일 */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #grid-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-width: 600px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .grid-item {
+            width: 100px;
+            height: 100px;
+            background-color: #2196f3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            position: relative;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            background: red;
+            color: white;
+            border: none;
+            font-size: 12px;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .controls, .performance-results {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="startAutoAddGrids()">자동 그리드 시작</button>
+        <button onclick="stopAutoAddGrids()">자동 그리드 종료</button>
+    </div>
+    <div id="grid-container">
+        <!-- 그리드 아이템이 동적으로 추가됩니다 -->
+    </div>
+    <div class="performance-results" id="performance-results">
+        <!-- 성능 측정 결과가 여기에 출력됩니다 -->
+    </div>
+
+    <!-- Interact.js 라이브러리 불러오기 -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@interactjs/interactjs/index.min.js"></script> -->
+    <script src="./node_modules/@interactjs/interactjs/index.js"></script>
+
+    <script>
+        let gridCount = 0;
+        let autoAddInterval;
+        let autoAddStartTime = 0;
+        let maxGrids = 100;  // 자동 생성할 최대 그리드 수
+
+        function addGrid() {
+            if (gridCount >= maxGrids) {
+                stopAutoAddGrids();  // 최대 그리드 수에 도달하면 자동 중지
+                return;
+            }
+
+            const gridItem = document.createElement('div');
+            gridItem.className = 'grid-item';
+            gridItem.textContent = `Grid ${++gridCount}`;
+            gridItem.setAttribute('data-id', gridCount);
+
+            // 제거 버튼 추가
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-btn';
+            removeBtn.textContent = 'X';
+            removeBtn.onclick = () => removeGrid(gridItem);
+            gridItem.appendChild(removeBtn);
+
+            // 그리드 컨테이너에 아이템 추가
+            document.getElementById('grid-container').appendChild(gridItem);
+
+            // Interact.js 드래그 설정 적용
+            interact(gridItem).draggable({
+                listeners: {
+                    move(event) {
+                        const target = event.target;
+                        const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                        const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+                        target.style.transform = `translate(${x}px, ${y}px)`;
+                        target.setAttribute('data-x', x);
+                        target.setAttribute('data-y', y);
+                    }
+                }
+            });
+        }
+
+        function startAutoAddGrids() {
+            if (!autoAddInterval) {
+                gridCount = 0;  // 그리드 수 초기화
+                autoAddStartTime = performance.now();  // 시작 시간 기록
+                autoAddInterval = setInterval(addGrid, 1000);  // 1초마다 그리드 추가
+            }
+        }
+
+        function stopAutoAddGrids() {
+            if (autoAddInterval) {
+                clearInterval(autoAddInterval);
+                autoAddInterval = null;
+
+                const autoAddEndTime = performance.now();  // 종료 시간 기록
+                const totalTime = autoAddEndTime - autoAddStartTime;
+                displayPerformanceResults(totalTime, gridCount);
+            }
+        }
+
+        function removeGrid(gridItem) {
+            gridItem.remove();  // 그리드 아이템 제거
+        }
+
+        function displayPerformanceResults(totalTime, gridCount) {
+            const resultsContainer = document.getElementById('performance-results');
+            resultsContainer.innerHTML = `
+                <h2>Performance Results</h2>
+                <p>Total Grids Added: ${gridCount}</p>
+                <p>Total Time for Auto Add: ${totalTime.toFixed(2)} ms</p>
+                <p>Average Time per Grid: ${(totalTime / gridCount).toFixed(2)} ms</p>
+            `;
+        }
+    </script>
+</body>
+</html>
